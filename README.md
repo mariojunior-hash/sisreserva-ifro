@@ -197,11 +197,32 @@ Abra o navegador e acesse a aplicação:
 - **Gerenciamento de Recursos:** `http://localhost/sisreserva/public/admin/recursos.php`
 - **Moderação de Reservas:** `http://localhost/sisreserva/public/admin/reservas.php`
 
+### Como Verificar se o Banco de Dados Conectou:
+Ao acessar `http://localhost/sisreserva/public/index.php`, observe a barra de status logo abaixo do título:
+- 🟢 **Badge Verde ("BANCO DE DADOS CONECTADO"):** Confirma que o PDO estabeleceu comunicação com o MySQL com sucesso e as consultas estão operacionais. O catálogo exibirá os recursos cadastrados.
+- 🔴 **Alerta Vermelho ("ERRO DE CONEXÃO COM O BANCO DE DADOS"):** Indica falha no serviço MySQL ou credenciais divergentes. Siga o item 10 deste manual para diagnosticar.
+
 ---
 
 ## 8. Contas de Demonstração (Seed) e Procedimentos de Teste
 
-Caso tenha importado o script `database/seed.sql`, você pode utilizar as seguintes contas de teste:
+### Procedimento Passo a Passo para Criar uma Conta e Testar o Login:
+1. Acesse `http://localhost/sisreserva/public/cadastro.php` (ou clique no botão **Cadastrar-se** na barra de navegação).
+2. Preencha os dados do formulário:
+   - **Nome Completo:** ex: `Prof. Carlos Mendes`
+   - **E-mail Institucional:** ex: `carlos.mendes@ifro.edu.br` (o sistema valida formato de e-mail)
+   - **Matrícula / SIAPE:** ex: `2026PROF99`
+   - **Senha e Confirmação:** mínimo de 6 caracteres (ex: `Senha@2026`)
+3. Clique em **Concluir Cadastro**.
+4. O sistema salva o registro de forma segura utilizando `password_hash(..., PASSWORD_DEFAULT)` e redireciona para a tela de login com alerta de sucesso.
+5. Em `http://localhost/sisreserva/public/login.php`, digite o e-mail e a senha cadastrados e clique em **Entrar**.
+6. A sessão do usuário (`SISRESERVA_SESSION`) é iniciada com perfil `SOLICITANTE` e o painel `public/dashboard.php` é carregado com as métricas do usuário.
+7. Para encerrar, clique no botão **Sair** no menu superior (`public/logout.php`), que destrói a sessão e limpa o cookie com segurança.
+
+---
+
+### Contas de Demonstração Pré-carregadas (Seed):
+Caso tenha importado o script `database/seed.sql`, você também pode utilizar as contas didáticas de demonstração:
 
 | Perfil | E-mail de Acesso | Senha Padrão | Funcionalidades Habilitadas |
 | :--- | :--- | :--- | :--- |
@@ -209,7 +230,8 @@ Caso tenha importado o script `database/seed.sql`, você pode utilizar as seguin
 | **Professor (SOLICITANTE)** | `professor@ifro.edu.br` | `Professor@123` | Consulta de grade, submissão de reservas, cancelamento de reservas próprias futuras. |
 | **Aluna (SOLICITANTE)** | `maria.aluna@ifro.edu.br` | `Aluno@123` | Consulta e solicitações de laboratórios. |
 
-*(Em ambiente de produção real, altere imediatamente as senhas ou crie novos usuários administrativos).*
+> **Nota de Segurança:** As contas e senhas acima são destinadas estritamente a ambientes locais de avaliação acadêmica. Para ambientes de produção, crie um novo administrador ou gere uma nova senha utilizando:  
+> `php -r "echo password_hash('SuaNovaSenhaForte!', PASSWORD_DEFAULT);"` e atualize a tabela `users`.
 
 ### Roteiro de Verificação das Funcionalidades:
 
@@ -261,21 +283,47 @@ Todos os requisitos e regras de negócio especificados foram implementados no c�
 
 ## 10. Problemas Comuns e Soluções (Troubleshooting)
 
-### 1. Erro `404 Not Found` ao clicar nos links
-- **Causa:** O Apache não está localizando o subdiretório `/sisreserva/public/` ou a constante `BASE_URL` foi alterada.
-- **Solução:** Certifique-se de acessar `http://localhost/sisreserva/public/index.php`. Verifique em `config/config.php` se a constante `BASE_URL` está definida como `define('BASE_URL', '/sisreserva/public');`.
+### 1. Erro `404 Not Found` ao clicar nos links ou acessar a página inicial
+- **Causa:** O Apache não está localizando o subdiretório `/sisreserva/public/` ou o projeto foi clonado com outro nome de pasta (ex: `sisreserva-main` ou `projeto`).
+- **Solução:**
+  1. Certifique-se de que a pasta dentro de `C:\xampp\htdocs\` se chame exatamente `sisreserva` (ou seja, `C:\xampp\htdocs\sisreserva\`).
+  2. Acesse diretamente pela URL completa: `http://localhost/sisreserva/public/index.php`.
+  3. Verifique em `config/config.php` se a constante `BASE_URL` está definida como `define('BASE_URL', '/sisreserva/public');`.
 
-### 2. Mensagem de erro de conexão com o banco na página inicial
-- **Causa:** O serviço MySQL do XAMPP não foi iniciado ou a senha está incorreta.
-- **Solução:** Abra o XAMPP Control Panel e confirme que o MySQL está com o botão verde e a porta 3306 ativa. Caso o MySQL do seu computador utilize uma senha diferente de vazio (ex: `sua_senha`), defina essa senha no arquivo `config/database.local.php`.
+### 2. Conexão Recusada (`Connection refused` ou MySQL parado)
+- **Causa:** O serviço do MySQL não foi iniciado no XAMPP ou foi interrompido por erro de configuração.
+- **Solução:**
+  1. Abra o **XAMPP Control Panel** e clique em **Start** no módulo **MySQL**.
+  2. Verifique se o texto do módulo fica com fundo verde e exibe a porta `3306`.
+  3. Se o MySQL falhar ao iniciar, verifique se outro serviço como MariaDB ou MySQL standalone está rodando como serviço do Windows.
 
-### 3. Erro `Access denied for user 'root'@'localhost'`
+### 3. Banco de Dados Inexistente (`Unknown database 'sisreserva'`)
+- **Causa:** O Apache e o MySQL estão rodando, mas a base de dados ainda não foi criada no MySQL.
+- **Solução:**
+  1. Acesse o phpMyAdmin em `http://localhost/phpmyadmin/`.
+  2. Clique em **Novo**, digite o nome `sisreserva`, selecione a collation `utf8mb4_unicode_ci` e clique em **Criar**.
+  3. Em seguida, acesse a aba **Importar** e execute o arquivo `database/schema.sql` (e opcionalmente `database/seed.sql`).
+
+### 4. Erro de Acesso Negado (`Access denied for user 'root'@'localhost'`)
 - **Causa:** O MySQL local possui senha configurada, mas o arquivo `config/database.local.php` está com senha vazia ou ausente.
-- **Solução:** Crie `config/database.local.php` a partir de `config/database.example.php` e preencha a constante `DB_PASS` com a senha do seu usuário do banco.
+- **Solução:**
+  1. No Windows, copie `config/database.example.php` para `config/database.local.php`.
+  2. Abra o arquivo em um editor e preencha a constante `DB_PASS` com a senha do seu usuário do banco:
+     ```php
+     define('DB_PASS', 'sua_senha_aqui');
+     ```
 
-### 4. Conflito de portas no MySQL (Porta 3306 ocupada)
-- **Causa:** Outro serviço de banco de dados (ex: MariaDB standalone ou MySQL80 como serviço do Windows) já está escutando na porta 3306.
-- **Solução:** No `config/database.local.php`, altere a porta para a porta correta em execução (ex: `define('DB_PORT', '3308');`).
+### 5. Porta 80 do Apache Ocupada (Apache não inicia no XAMPP)
+- **Causa:** Outro aplicativo (ex: IIS - Internet Information Services, Skype ou World Wide Web Publishing Service) está escutando na porta 80.
+- **Solução:**
+  - Opção A (Desativar IIS): Abra o PowerShell como Administrador e execute `iisreset /stop` ou desative o serviço `W3SVC`.
+  - Opção B (Alterar porta do Apache): No XAMPP Control Panel, clique em **Config** no Apache -> `httpd.conf`, altere a linha `Listen 80` para `Listen 8080` e acesse via `http://localhost:8080/sisreserva/public/index.php`.
+
+### 6. Conflito de Portas no MySQL (Porta 3306 ocupada)
+- **Causa:** Outro serviço de banco de dados (ex: MySQL 8.0 instalado separadamente no Windows) já está escutando na porta 3306.
+- **Solução:**
+  1. Se você já tem o MySQL Server rodando no Windows na porta 3306, não é necessário rodar o MySQL do XAMPP; basta criar o banco `sisreserva` nele e configurar a senha no `config/database.local.php`.
+  2. Caso queira que o MySQL do XAMPP rode em outra porta (ex: 3307), altere no XAMPP Control Panel e defina `define('DB_PORT', '3307');` no `config/database.local.php`.
 
 ---
 
