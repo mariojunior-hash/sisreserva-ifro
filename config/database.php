@@ -6,7 +6,32 @@
 
 declare(strict_types=1);
 
-// Permite sobreposição por arquivo local não versionado (database.local.php) se existir
+// 1. Carrega variáveis de ambiente de .env na raiz (se existir), sem dependências externas
+$envPath = dirname(__DIR__) . '/.env';
+if (file_exists($envPath) && is_readable($envPath)) {
+    $envLines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+    foreach ($envLines as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) {
+            continue;
+        }
+        if (str_contains($line, '=')) {
+            [$envKey, $envVal] = explode('=', $line, 2);
+            $envKey = trim($envKey);
+            $envVal = trim($envVal);
+            if ((str_starts_with($envVal, '"') && str_ends_with($envVal, '"')) ||
+                (str_starts_with($envVal, "'") && str_ends_with($envVal, "'"))) {
+                $envVal = substr($envVal, 1, -1);
+            }
+            if (getenv($envKey) === false) {
+                putenv("{$envKey}={$envVal}");
+                $_ENV[$envKey] = $envVal;
+            }
+        }
+    }
+}
+
+// 2. Permite sobreposição por arquivo local não versionado (database.local.php) se existir
 if (file_exists(__DIR__ . '/database.local.php')) {
     require_once __DIR__ . '/database.local.php';
 }

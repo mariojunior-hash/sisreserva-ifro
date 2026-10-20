@@ -4,6 +4,10 @@ Sistema Web para gerenciamento, controle e agendamento de laboratórios de infor
 
 Desenvolvido com foco em boas práticas, **PHP 8.x tradicional**, **MySQL/MariaDB (InnoDB, utf8mb4)**, **PDO com Prepared Statements**, **HTML5**, **CSS3** e **JavaScript Vanilla**, sem dependência de frameworks pesados, Node.js ou Composer para funcionamento essencial. O sistema funciona localmente no **XAMPP** (inclusive sem conexão com a internet) e é portável para hospedagens web compartilhadas gratuitas ou comerciais (como InfinityFree, AwardSpace, cPanel e similares).
 
+> 📄 **Documento de Especificação Técnica Oficial:** Para a modelagem completa, requisitos, regras de negócio e fundamentação acadêmica, consulte o [`spec.md`](spec.md).  
+> 📜 **Histórico de Decisões e Revisões Humanas:** Consulte o arquivo [`CHANGELOG.md`](CHANGELOG.md).  
+> 🚀 **Guia de Implantação para Produção:** Consulte o arquivo [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
 ---
 
 ## 1. Descrição e Finalidade do Sistema
