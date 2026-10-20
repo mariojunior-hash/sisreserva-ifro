@@ -1,0 +1,41 @@
+# ============================================================
+# SISRESERVA IFRO — Regras de Exclusão do Git (.gitignore)
+# ============================================================
+
+# Arquivos de ambiente e credenciais locais (NUNCA VERSIONAR)
+.env
+.env.*
+!.env.example
+config/database.local.php
+*.local.php
+config/*.local.php
+
+# Backups e Dumps do Banco de Dados com dados reais
+*.sql.bak
+*.sql.gz
+*.dump
+database/backups/
+database/dumps/
+dump_*.sql
+
+# Logs do servidor e da aplicação
+*.log
+error_log
+apache_errors.log
+access.log
+
+# Arquivos de Sessão e Temporários do PHP / SO
+sess_*
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Arquivos de editores e IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
